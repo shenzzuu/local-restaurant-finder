@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Local Restaurant Finder</title>
+    <link rel="stylesheet" href="styles/style.css" />
+  </head>
+
+  <body>
+    <h1>🍽️ Local Restaurant Finder</h1>
+
+    <!-- 🔍 Search Form -->
+    <form id="searchForm">
+      <input type="text" id="query" placeholder="Search by name..." required />
+      <button type="submit">Search</button>
+    </form>
+
+    <!-- 📋 Buttons Row -->
+    <div class="button-row">
+      <button onclick="window.location.href='reviews.html'">
+        View All Restaurants
+      </button>
+
+      <button onclick="window.location.href='favorites.html'">
+        View Favorites
+      </button>
+    </div>
+
+    <!-- 🧾 Results will appear here -->
+    <div id="results"></div>
+
+    <!-- 🔗 JavaScript logic for search -->
+    <script src="js/main.js"></script>
+  </body>
+</html>
