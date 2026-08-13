@@ -1,8 +1,21 @@
 <?php
-require_once __DIR__ . '/config.php';
+// Load local config if it exists (for local development)
+if (file_exists(__DIR__ . '/config.php')) {
+    require_once __DIR__ . '/config.php';
+}
+
 header('Content-Type: application/json');
 
-$apiKey = GOOGLE_PLACES_API_KEY;
+// Get API key from environment variable (Render) or local config constant
+$apiKey = getenv('GOOGLE_PLACES_API_KEY');
+if (!$apiKey && defined('GOOGLE_PLACES_API_KEY')) {
+    $apiKey = GOOGLE_PLACES_API_KEY;
+}
+
+if (!$apiKey) {
+    echo json_encode(['error' => 'API Key is missing from environment variables']);
+    exit;
+}
 $query = isset($_GET['q']) ? trim($_GET['q']) : '';
 $lat = isset($_GET['lat']) ? (float)$_GET['lat'] : null;
 $lng = isset($_GET['lng']) ? (float)$_GET['lng'] : null;
