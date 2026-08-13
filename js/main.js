@@ -47,13 +47,15 @@ async function performSearch(query, lat = null, lng = null) {
         }
       }
 
+      const websiteHTML = item.website ? `<p><strong>Website:</strong> <a href="${item.website}" target="_blank" style="word-break: break-all;">Visit Website</a></p>` : `<p><strong>Website:</strong> N/A</p>`;
+
       // Build base HTML
       div.innerHTML = `
         <h3>${item.name || item.title}</h3>
         <p><strong>Address:</strong> ${item.address}</p>
         <p><strong>Phone:</strong> ${item.phone ?? "N/A"}</p>
         <p><strong>Rating:</strong> ${item.rating ?? "N/A"} (${item.reviews} reviews)</p>
-        <p><strong>Website:</strong> <a href="${item.website}" target="_blank">${item.website}</a></p>
+        ${websiteHTML}
         <p><strong>Map:</strong> <a href="${item.url}" target="_blank">View on Google Maps</a></p>
         ${weatherHTML}
       `;
@@ -121,6 +123,13 @@ async function performSearch(query, lat = null, lng = null) {
 document.getElementById("searchForm").addEventListener("submit", function (e) {
   e.preventDefault();
   const query = document.getElementById("query").value.trim();
+  
+  if (!query) {
+    const resultsDiv = document.getElementById("results");
+    resultsDiv.innerHTML = "<p>Please enter a search term.</p>";
+    return;
+  }
+
   performSearch(query);
 });
 

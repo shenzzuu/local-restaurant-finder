@@ -27,13 +27,19 @@ $requestData = [
 ];
 
 if ($lat !== null && $lng !== null) {
-    $requestData['locationBias'] = [
-        'circle' => [
-            'center' => [
-                'latitude' => $lat,
-                'longitude' => $lng
+    $latOffset = 5.0 / 111.32;
+    $lngOffset = 5.0 / (111.32 * cos(deg2rad($lat)));
+    
+    $requestData['locationRestriction'] = [
+        'rectangle' => [
+            'low' => [
+                'latitude' => $lat - $latOffset,
+                'longitude' => $lng - $lngOffset
             ],
-            'radius' => 5000.0 // 5km
+            'high' => [
+                'latitude' => $lat + $latOffset,
+                'longitude' => $lng + $lngOffset
+            ]
         ]
     ];
 }
@@ -66,6 +72,23 @@ $results = [];
 
 if (isset($data['places']) && is_array($data['places'])) {
     foreach ($data['places'] as $place) {
+        $placeLat = $place['location']['latitude'] ?? null;
+        $placeLng = $place['location']['longitude'] ?? null;
+        
+        // Filter out places that are too far if lat/lng are provided
+        if ($lat !== null && $lng !== null && $placeLat !== null && $placeLng !== null) {
+            $earthRadius = 6371; // km
+            $dLat = deg2rad($placeLat - $lat);
+            $dLng = deg2rad($placeLng - $lng);
+            $a = sin($dLat/2) * sin($dLat/2) + cos(deg2rad($lat)) * cos(deg2rad($placeLat)) * sin($dLng/2) * sin($dLng/2);
+            $c = 2 * atan2(sqrt($a), sqrt(1-$a));
+            $distance = $earthRadius * $c;
+            
+            if ($distance > 10.0) { // Keep within 10km max
+                continue; 
+            }
+        }
+
         $results[] = [
             'name' => $place['displayName']['text'] ?? 'Unnamed Restaurant',
             'address' => $place['formattedAddress'] ?? '',
@@ -75,11 +98,11 @@ if (isset($data['places']) && is_array($data['places'])) {
             'website' => $place['websiteUri'] ?? '',
             'url' => $place['googleMapsUri'] ?? '',
             'location' => [
-                'lat' => $place['location']['latitude'] ?? null,
-                'lng' => $place['location']['longitude'] ?? null
+                'lat' => $placeLat,
+                'lng' => $placeLng
             ]
         ];
     }
 }
 
-echo json_encode($results);
+echo json_encode(array_values($results));
