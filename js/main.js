@@ -1,7 +1,4 @@
-document.getElementById("searchForm").addEventListener("submit", async function (e) {
-  e.preventDefault();
-
-  const query = document.getElementById("query").value.trim();
+async function performSearch(query, lat = null, lng = null) {
   const resultsDiv = document.getElementById("results");
   resultsDiv.innerHTML = "Searching...";
 
@@ -16,7 +13,12 @@ document.getElementById("searchForm").addEventListener("submit", async function 
   }
 
   try {
-    const res = await fetch("api/search.php?q=" + encodeURIComponent(query));
+    let url = "api/search.php?q=" + encodeURIComponent(query);
+    if (lat !== null && lng !== null) {
+        url += `&lat=${lat}&lng=${lng}`;
+    }
+
+    const res = await fetch(url);
     const data = await res.json();
 
     if (!Array.isArray(data) || data.length === 0) {
@@ -114,4 +116,34 @@ document.getElementById("searchForm").addEventListener("submit", async function 
     resultsDiv.innerHTML = "<p>Error fetching data.</p>";
     console.error(err);
   }
+}
+
+document.getElementById("searchForm").addEventListener("submit", function (e) {
+  e.preventDefault();
+  const query = document.getElementById("query").value.trim();
+  performSearch(query);
+});
+
+document.getElementById("nearMeBtn").addEventListener("click", function () {
+  const query = document.getElementById("query").value.trim();
+  const resultsDiv = document.getElementById("results");
+
+  if (!navigator.geolocation) {
+    resultsDiv.innerHTML = "<p>Geolocation is not supported by your browser.</p>";
+    return;
+  }
+
+  resultsDiv.innerHTML = "Asking for location permission...";
+  
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      const lat = position.coords.latitude;
+      const lng = position.coords.longitude;
+      performSearch(query, lat, lng);
+    },
+    (error) => {
+      console.error("Geolocation error:", error);
+      resultsDiv.innerHTML = "<p>Could not get your location. Please check permissions.</p>";
+    }
+  );
 });

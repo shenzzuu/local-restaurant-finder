@@ -1,0 +1,2 @@
+# Exclude configuration files that contain sensitive keys
+api/config.php
